@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# Prompt the user for the password, and store it in the variable PASSWORD.
-echo "Please enter your password:"
-read -s PASSWORD
-
-# Change the password from plain text to hex
-PASSWORD=$(echo -n $PASSWORD | hexdump -v -e '/1 "%02x"')
-
 # Check which OS are we running on, and store in the variable OS.
 OS=$(uname -s)
 
@@ -97,6 +90,13 @@ fi
 # Copy encrypted ssh key to ~/.ssh directory
 # Since repo has not be cloned yet, fetch the encrypted ssh using curl
 curl -s -o ~/.ssh/id_rsa_enc https://raw.githubusercontent.com/EdGraVill/pcf/refs/heads/main/id_rsa_enc
+
+# Prompt the user for the password, and store it in the variable PASSWORD.
+echo -n "Please enter your password: "
+read -s PASSWORD
+
+# Change the password from plain text to hex
+PASSWORD=$(echo -n $PASSWORD | hexdump -v -e '/1 "%02x"')
 
 # Change directory to ~/.ssh
 pushd ~/.ssh
