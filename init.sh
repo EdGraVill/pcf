@@ -146,7 +146,15 @@ if [ ! -d ~/.ssh ]; then
 fi
 
 # Clone config repo
-git clone git@github.com:EdGraVill/cf.git >/dev/null
+echo "Cloning config repo..."
+GIT_CLONE_OUTPUT=$(git clone git@github.com:EdGraVill/cf.git 2>&1)
+
+# Check if clone was successful
+if echo "$GIT_CLONE_OUTPUT" | grep -q "fatal:"; then
+    echo "ERROR: Could not clone the config repo"
+    exit 1
+fi
+
 sudo chmod +x ~/cf/init.sh
 
 # Continue from there
