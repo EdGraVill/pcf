@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Automated setup script for edgravill"
-echo "v0.3.0"
+echo "v0.3.1"
 echo "This script will setup the environment for edgravill. Is meant to be run on a fresh install of the OS."
 echo "Press any key to continue, or Ctrl+C to exit"
 read -n 1 -s
@@ -25,6 +25,25 @@ if [ "$OS" = "Darwin" ]; then
 fi
 
 echo "Working on $OS"
+
+# Prompt the user for the password, and store it in the variable PASSWORD.
+echo "Please enter the decryption password:"
+read -s PASSWORD
+
+# Fetch encrypted secrets
+curl -s -o ~/secrets_enc -H 'Cache-Control: no-cache' $FILES_URL/secrets_enc
+
+# Decrypt the secrets
+DECRYPT_OUTPUT=$(openssl enc -d -aes-256-cbc -salt -pbkdf2 -k "$PASSWORD" -in ~/secrets_enc -out ~/secrets.sh 2>&1)
+
+# Check if the password is correct
+if echo "$DECRYPT_OUTPUT" | grep -q "bad decrypt"; then
+    echo "ERROR: Incorrect password"
+    exit 1
+fi
+
+# Source the secrets
+source ~/secrets.sh
 
 # Check if the OS is supported.
 if [[ ! " ${SUPPORTED_OS[@]} " =~ " ${OS} " ]]; then
@@ -83,25 +102,6 @@ case $OS in
     fi
     ;;
 esac
-
-# Prompt the user for the password, and store it in the variable PASSWORD.
-echo "Please enter the decryption password:"
-read -s PASSWORD
-
-# Fetch encrypted secrets
-curl -s -o ~/secrets_enc -H 'Cache-Control: no-cache' $FILES_URL/secrets_enc
-
-# Decrypt the secrets
-DECRYPT_OUTPUT=$(openssl enc -d -aes-256-cbc -salt -pbkdf2 -k "$PASSWORD" -in ~/secrets_enc -out ~/secrets.sh 2>&1)
-
-# Check if the password is correct
-if echo "$DECRYPT_OUTPUT" | grep -q "bad decrypt"; then
-    echo "ERROR: Incorrect password"
-    exit 1
-fi
-
-# Source the secrets
-source ~/secrets.sh
 
 cleanup() {
     # If repo hasn't been cloned yet, remove the ssh key from the ssh-agent
