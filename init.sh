@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Prompt the user for the password, and store it in the variable PASSWORD.
 echo "Please enter your password:"
 read -s PASSWORD
@@ -21,6 +23,8 @@ if [ "$OS" = "Darwin" ]; then
     OS="macOS"
 fi
 
+echo "Working on $OS"
+
 # List of supportes OS
 SUPPORTED_OS[0]="macOS"
 SUPPORTED_OS[1]="Ubuntu"
@@ -38,6 +42,8 @@ case $OS in
     if ! command -v git &>/dev/null; then
         echo "Git is not installed. Installing Git using 'xcode-select --install'"
         xcode-select --install
+        echo "Install it and run this script again."
+        exit 0
     fi
     ;;
 "Ubuntu" | "Debian")
