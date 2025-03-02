@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Automated setup script for edgravill"
-echo "v0.5.0"
+echo "v0.5.1"
 echo "This script will setup the environment for edgravill. Is meant to be run on a fresh install of the OS."
 echo "Press any key to continue, or Ctrl+C to exit"
 read -n 1 -s
@@ -55,6 +55,16 @@ source ~/secrets.sh
 if [[ ! " ${SUPPORTED_OS[@]} " =~ " ${OS} " ]]; then
     echo "Unsupported OS: $OS"
     exit 1
+fi
+
+# If Debian, sudo doesn't exist. Let's create it.
+if [ "$OS" = "Debian" ]; then
+    USER=$(whoami)
+    su --login
+    apt update
+    apt install -y sudo
+    adduser $USER sudo
+    logout
 fi
 
 # Check if Git is installed. If not, install it
