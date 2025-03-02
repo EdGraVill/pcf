@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Automated setup script for edgravill"
-echo "v0.1.0"
+echo "v0.1.1"
 
 pushd ~
 
@@ -90,13 +90,13 @@ case $OS in
 esac
 
 cleanup() {
-    # Check if ssh-agent has added the ssh key. If yes, remove it.
-    if [ -n "$SSH_AGENT_PID" ]; then
+    # If repo hasn't been cloned yet, remove the ssh key from the ssh-agent
+    if [ -n "$SSH_AGENT_PID" ] && [ ! -d ~/cf ]; then
         ssh-add -d ~/.ssh/id_rsa
     fi
 
-    # Check if .ssh directory exists. If yes, remove it.
-    if [ -d ~/.ssh ]; then
+    # If repo hasn't been cloned yet, remove all the ssh stuff
+    if [ -d ~/.ssh ] && [ ! -d ~/cf ]; then
         rm -rf ~/.ssh
     fi
 
