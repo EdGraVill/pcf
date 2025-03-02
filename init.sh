@@ -93,7 +93,7 @@ if [ ! -d ~/.ssh ]; then
     # Copy encrypted ssh key to ~/.ssh directory
     # Since repo has not be cloned yet, fetch the encrypted ssh using curl
     curl -s -o ~/.ssh/id_rsa_enc -H 'Cache-Control: no-cache' $FILES_URL/id_rsa_enc
-    curl -s -o ~/.ssh/id_rsa_enc -H 'Cache-Control: no-cache' $FILES_URL/id_rsa_pub_enc
+    curl -s -o ~/.ssh/id_rsa_pub_enc -H 'Cache-Control: no-cache' $FILES_URL/id_rsa_pub_enc
 
     # Prompt the user for the password, and store it in the variable PASSWORD.
     echo "Please enter your password:"
