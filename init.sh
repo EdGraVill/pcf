@@ -155,7 +155,7 @@ if echo "$GIT_CLONE_OUTPUT" | grep -q "fatal:"; then
     exit 1
 fi
 
-sudo chmod +x ~/cf/init.sh
+sudo chmod +x ~/cf/continue.sh
 
 # Continue from there
 echo "All public stuff done. Starting private stuff..."
