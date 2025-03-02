@@ -84,44 +84,44 @@ esac
 # Check if .ssh directory exists. If not, create it.
 if [ ! -d ~/.ssh ]; then
     mkdir ~/.ssh
+
+    # Copy encrypted ssh key to ~/.ssh directory
+    # Since repo has not be cloned yet, fetch the encrypted ssh using curl
+    curl -s -o ~/.ssh/id_rsa_enc -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/EdGraVill/pcf/refs/heads/main/id_rsa_enc
+
+    # Prompt the user for the password, and store it in the variable PASSWORD.
+    echo -n "Please enter your password: "
+    read -s PASSWORD
+
+    # Change the password from plain text to hex
+    PASSWORD=$(echo -n $PASSWORD | hexdump -v -e '/1 "%02x"')
+
+    # Change directory to ~/.ssh
+    pushd ~/.ssh
+
+    # Decrypt the ssh key
+    openssl enc -d -aes-256-cbc -salt -pbkdf2 -k "$PASSWORD" -in id_rsa_enc -out id_rsa
+
+    # Remove the encrypted ssh key
+    rm id_rsa_enc
+
+    # Change the permissions of the ssh key
+    chmod 400 id_rsa
+
+    # Generate the public key
+    ssh-keygen -y -f id_rsa >id_rsa.pub
+
+    # Check if ssh-agent is running. If not, start it.
+    if [ -z "$SSH_AGENT_PID" ]; then
+        eval $(ssh-agent -s)
+    fi
+
+    # Add the ssh key to the ssh-agent
+    ssh-add ./id_rsa
+
+    # Change directory back to the original directory
+    popd
 fi
-
-# Copy encrypted ssh key to ~/.ssh directory
-# Since repo has not be cloned yet, fetch the encrypted ssh using curl
-curl -s -o ~/.ssh/id_rsa_enc -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/EdGraVill/pcf/refs/heads/main/id_rsa_enc
-
-# Prompt the user for the password, and store it in the variable PASSWORD.
-echo -n "Please enter your password: "
-read -s PASSWORD
-
-# Change the password from plain text to hex
-PASSWORD=$(echo -n $PASSWORD | hexdump -v -e '/1 "%02x"')
-
-# Change directory to ~/.ssh
-pushd ~/.ssh
-
-# Decrypt the ssh key
-openssl enc -d -aes-256-cbc -salt -pbkdf2 -k "$PASSWORD" -in id_rsa_enc -out id_rsa
-
-# Remove the encrypted ssh key
-rm id_rsa_enc
-
-# Change the permissions of the ssh key
-chmod 400 id_rsa
-
-# Generate the public key
-ssh-keygen -y -f id_rsa >id_rsa.pub
-
-# Check if ssh-agent is running. If not, start it.
-if [ -z "$SSH_AGENT_PID" ]; then
-    eval $(ssh-agent -s)
-fi
-
-# Add the ssh key to the ssh-agent
-ssh-add ./id_rsa
-
-# Change directory back to the original directory
-popd
 
 # Clone config repo
 git clone git@github.com:EdGraVill/cf.git
