@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Automated setup script for edgravill"
-echo "v0.4.3"
+echo "v0.4.4"
 echo "This script will setup the environment for edgravill. Is meant to be run on a fresh install of the OS."
 echo "Press any key to continue, or Ctrl+C to exit"
 read -n 1 -s
@@ -128,6 +128,7 @@ cleanup() {
     unset cleanup
 
     clean_secrets
+    unset -f cleanup
 }
 
 # Check if .ssh directory exists. If not, create it.
