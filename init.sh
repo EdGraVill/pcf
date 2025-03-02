@@ -1,10 +1,13 @@
 #!/bin/bash
 
 echo "Automated setup script for edgravill"
-echo "v0.3.1"
+echo "v0.3.2"
 echo "This script will setup the environment for edgravill. Is meant to be run on a fresh install of the OS."
 echo "Press any key to continue, or Ctrl+C to exit"
 read -n 1 -s
+
+# URL of the files to download
+FILES_URL="https://raw.githubusercontent.com/EdGraVill/pcf/refs/heads/main"
 
 pushd ~
 
