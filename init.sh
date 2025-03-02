@@ -32,11 +32,10 @@ fi
 # Check if Git is installed. If not, install it
 case $OS in
 "macOS")
-    if ! command -v git &>/dev/null; then
-        echo "Git is not installed. Installing Git using 'xcode-select --install'"
-        xcode-select --install
-        echo "Install it and run this script again."
-        exit 0
+    GIT_OUTPUT=$(git --version 2>&1)
+    if echo "$GIT_OUTPUT" | grep -q "No developer tools were found"; then
+        echo "Git is not installed properly. If the Developer Tools installer prompt is not shown, please install it manually with 'xcode-select --install'"
+        exit 1
     fi
     ;;
 "Ubuntu" | "Debian")
