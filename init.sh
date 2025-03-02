@@ -93,14 +93,17 @@ if [ ! -d ~/.ssh ]; then
     echo -n "Please enter your password: "
     read -s PASSWORD
 
-    # Change the password from plain text to hex
-    PASSWORD=$(echo -n $PASSWORD | hexdump -v -e '/1 "%02x"')
-
     # Change directory to ~/.ssh
     pushd ~/.ssh
 
     # Decrypt the ssh key
-    openssl enc -d -aes-256-cbc -salt -pbkdf2 -k "$PASSWORD" -in id_rsa_enc -out id_rsa
+    DECRYPT_OUTPUT=$(openssl enc -d -aes-256-cbc -salt -pbkdf2 -k "$PASSWORD" -in id_rsa_enc -out id_rsa 2>&1)
+
+    # Check if the password is correct
+    if echo "$DECRYPT_OUTPUT" | grep -q "bad decrypt"; then
+        echo "ERROR: Incorrect password"
+        exit 1
+    fi
 
     # Remove the encrypted ssh key
     rm id_rsa_enc
