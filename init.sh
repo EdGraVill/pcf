@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "Automated setup script for edgravill"
+echo "v0.1.0"
+
 pushd ~
 
 FILES_URL="https://raw.githubusercontent.com/EdGraVill/pcf/refs/heads/main"
@@ -169,18 +172,26 @@ if [ ! -d ~/.ssh ]; then
     popd
 fi
 
-# Clone config repo
-echo "Cloning config repo..."
-GIT_CLONE_OUTPUT=$(git clone git@github.com:EdGraVill/cf.git 2>&1)
+# Check if repo has already been cloned if no, clone it, otherwise pull the latest changes
+if [ -d ~/cf ]; then
+    # Pull latest changes
+    pushd ~/cf
+    git pull
+    popd
+else
+    # Clone config repo
+    echo "Cloning config repo..."
+    GIT_CLONE_OUTPUT=$(git clone git@github.com:EdGraVill/cf.git 2>&1)
 
-# Check if clone was successful
-if echo "$GIT_CLONE_OUTPUT" | grep -q "fatal:"; then
-    echo "ERROR: Could not clone the config repo"
-    cleanup
-    exit 1
+    # Check if clone was successful
+    if echo "$GIT_CLONE_OUTPUT" | grep -q "fatal:"; then
+        echo "ERROR: Could not clone the config repo"
+        cleanup
+        exit 1
+    fi
+
+    sudo chmod +x ~/cf/continue.sh
 fi
-
-sudo chmod +x ~/cf/continue.sh
 
 # Continue from there
 echo "All public stuff done. Starting private stuff..."
