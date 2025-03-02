@@ -96,7 +96,7 @@ if [ ! -d ~/.ssh ]; then
     curl -s -o ~/.ssh/id_rsa_pub_enc -H 'Cache-Control: no-cache' $FILES_URL/id_rsa_pub_enc
 
     # Prompt the user for the password, and store it in the variable PASSWORD.
-    echo "Please enter your password:"
+    echo "Please enter the decryption password:"
     read -s PASSWORD
 
     # Change directory to ~/.ssh
