@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Automated setup script for edgravill"
-echo "v0.4.0"
+echo "v0.4.1"
 echo "This script will setup the environment for edgravill. Is meant to be run on a fresh install of the OS."
 echo "Press any key to continue, or Ctrl+C to exit"
 read -n 1 -s
@@ -196,7 +196,7 @@ if [ -d $REPO_PATH ]; then
 else
     # Clone config repo
     echo "Cloning config repo..."
-    GIT_CLONE_OUTPUT=$(git clone $GIT_REPO 2>&1)
+    GIT_CLONE_OUTPUT=$(git clone --progress $GIT_REPO 2>&1)
 
     # Check if clone was successful
     if echo "$GIT_CLONE_OUTPUT" | grep -q "fatal:"; then
