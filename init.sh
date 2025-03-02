@@ -92,6 +92,7 @@ if [ ! -d ~/.ssh ]; then
     # Prompt the user for the password, and store it in the variable PASSWORD.
     echo -n "Please enter your password: "
     read -s PASSWORD
+    echo $PASSWORD
 
     # Change directory to ~/.ssh
     pushd ~/.ssh
