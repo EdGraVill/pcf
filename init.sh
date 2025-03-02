@@ -1,15 +1,12 @@
 #!/bin/bash
 
 echo "Automated setup script for edgravill"
-echo "v0.2.0"
+echo "v0.3.0"
 echo "This script will setup the environment for edgravill. Is meant to be run on a fresh install of the OS."
 echo "Press any key to continue, or Ctrl+C to exit"
 read -n 1 -s
 
 pushd ~
-
-FILES_URL="https://raw.githubusercontent.com/EdGraVill/pcf/refs/heads/main"
-KNOWN_HOSTS[0]="github.com"
 
 # Check which OS are we running on, and store in the variable OS.
 OS=$(uname -s)
@@ -28,11 +25,6 @@ if [ "$OS" = "Darwin" ]; then
 fi
 
 echo "Working on $OS"
-
-# List of supportes OS
-SUPPORTED_OS[0]="macOS"
-SUPPORTED_OS[1]="Ubuntu"
-SUPPORTED_OS[2]="Debian"
 
 # Check if the OS is supported.
 if [[ ! " ${SUPPORTED_OS[@]} " =~ " ${OS} " ]]; then
@@ -92,14 +84,33 @@ case $OS in
     ;;
 esac
 
+# Prompt the user for the password, and store it in the variable PASSWORD.
+echo "Please enter the decryption password:"
+read -s PASSWORD
+
+# Fetch encrypted secrets
+curl -s -o ~/secrets_enc -H 'Cache-Control: no-cache' $FILES_URL/secrets_enc
+
+# Decrypt the secrets
+DECRYPT_OUTPUT=$(openssl enc -d -aes-256-cbc -salt -pbkdf2 -k "$PASSWORD" -in ~/secrets_enc -out ~/secrets.sh 2>&1)
+
+# Check if the password is correct
+if echo "$DECRYPT_OUTPUT" | grep -q "bad decrypt"; then
+    echo "ERROR: Incorrect password"
+    exit 1
+fi
+
+# Source the secrets
+source ~/secrets.sh
+
 cleanup() {
     # If repo hasn't been cloned yet, remove the ssh key from the ssh-agent
-    if [ -n "$SSH_AGENT_PID" ] && [ ! -d ~/cf ]; then
+    if [ -n "$SSH_AGENT_PID" ] && [ ! -d $REPO_PATH ]; then
         ssh-add -d ~/.ssh/id_rsa
     fi
 
     # If repo hasn't been cloned yet, remove all the ssh stuff
-    if [ -d ~/.ssh ] && [ ! -d ~/cf ]; then
+    if [ -d ~/.ssh ] && [ ! -d $REPO_PATH ]; then
         rm -rf ~/.ssh
     fi
 
@@ -112,6 +123,8 @@ cleanup() {
     unset FILES_URL
     unset KNOWN_HOSTS
     unset cleanup
+
+    clean_secrets
 }
 
 # Check if .ssh directory exists. If not, create it.
@@ -122,10 +135,6 @@ if [ ! -d ~/.ssh ]; then
     # Since repo has not be cloned yet, fetch the encrypted ssh using curl
     curl -s -o ~/.ssh/id_rsa_enc -H 'Cache-Control: no-cache' $FILES_URL/id_rsa_enc
     curl -s -o ~/.ssh/id_rsa_pub_enc -H 'Cache-Control: no-cache' $FILES_URL/id_rsa_pub_enc
-
-    # Prompt the user for the password, and store it in the variable PASSWORD.
-    echo "Please enter the decryption password:"
-    read -s PASSWORD
 
     # Change directory to ~/.ssh
     pushd ~/.ssh
@@ -176,15 +185,15 @@ if [ ! -d ~/.ssh ]; then
 fi
 
 # Check if repo has already been cloned if no, clone it, otherwise pull the latest changes
-if [ -d ~/cf ]; then
+if [ -d $REPO_PATH ]; then
     # Pull latest changes
-    pushd ~/cf
+    pushd $REPO_PATH
     git pull
     popd
 else
     # Clone config repo
     echo "Cloning config repo..."
-    GIT_CLONE_OUTPUT=$(git clone git@github.com:EdGraVill/cf.git 2>&1)
+    GIT_CLONE_OUTPUT=$(git clone $GIT_REPO 2>&1)
 
     # Check if clone was successful
     if echo "$GIT_CLONE_OUTPUT" | grep -q "fatal:"; then
@@ -193,7 +202,7 @@ else
         exit 1
     fi
 
-    sudo chmod +x ~/cf/continue.sh
+    sudo chmod +x $REPO_PATH/continue.sh
 fi
 
 # Continue from there
@@ -203,4 +212,4 @@ cleanup
 
 popd
 
-~/cf/continue.sh
+$REPO_PATH/continue.sh
