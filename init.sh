@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Automated setup script for edgravill"
-echo "v0.4.5"
+echo "v0.4.6"
 echo "This script will setup the environment for edgravill. Is meant to be run on a fresh install of the OS."
 echo "Press any key to continue, or Ctrl+C to exit"
 read -n 1 -s
@@ -126,6 +126,9 @@ cleanup() {
     unset FILES_URL
     unset KNOWN_HOSTS
     unset cleanup
+    unset MAX_TRY
+    unset TRY
+    unset SLEEP_TIME_IN_SECONDS
 
     clean_secrets
     unset -f cleanup
@@ -201,10 +204,11 @@ else
 
     MAX_TRY=5
     TRY=0
+    SLEEP_TIME_IN_SECONDS=3
     check_repo() {
         # Check if clone was successful
         if [ ! -d $REPO_PATH ]; then
-            sleep 500
+            sleep $SLEEP_TIME_IN_SECONDS
             TRY=$((TRY + 1))
             if [ $TRY -lt $MAX_TRY ]; then
                 check_repo
