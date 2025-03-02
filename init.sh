@@ -86,6 +86,28 @@ case $OS in
     ;;
 esac
 
+cleanup() {
+    # Check if ssh-agent has added the ssh key. If yes, remove it.
+    if [ -n "$SSH_AGENT_PID" ]; then
+        ssh-add -d ~/.ssh/id_rsa
+    fi
+
+    # Check if .ssh directory exists. If yes, remove it.
+    if [ -d ~/.ssh ]; then
+        rm -rf ~/.ssh
+    fi
+
+    # Clean variables
+    unset OS
+    unset SUPPORTED_OS
+    unset GIT_OUTPUT
+    unset DECRYPT_OUTPUT
+    unset PASSWORD
+    unset FILES_URL
+    unset KNOWN_HOSTS
+    unset cleanup
+}
+
 # Check if .ssh directory exists. If not, create it.
 if [ ! -d ~/.ssh ]; then
     mkdir ~/.ssh
@@ -108,6 +130,7 @@ if [ ! -d ~/.ssh ]; then
     # Check if the password is correct
     if echo "$DECRYPT_OUTPUT" | grep -q "bad decrypt"; then
         echo "ERROR: Incorrect password"
+        cleanup
         exit 1
     fi
 
@@ -117,6 +140,7 @@ if [ ! -d ~/.ssh ]; then
     # Check if the password is correct
     if echo "$DECRYPT_OUTPUT" | grep -q "bad decrypt"; then
         echo "ERROR: Incorrect password"
+        cleanup
         exit 1
     fi
 
@@ -152,6 +176,7 @@ GIT_CLONE_OUTPUT=$(git clone git@github.com:EdGraVill/cf.git 2>&1)
 # Check if clone was successful
 if echo "$GIT_CLONE_OUTPUT" | grep -q "fatal:"; then
     echo "ERROR: Could not clone the config repo"
+    cleanup
     exit 1
 fi
 
@@ -160,14 +185,7 @@ sudo chmod +x ~/cf/continue.sh
 # Continue from there
 echo "All public stuff done. Starting private stuff..."
 
-# Clean variables
-unset OS
-unset SUPPORTED_OS
-unset GIT_OUTPUT
-unset DECRYPT_OUTPUT
-unset PASSWORD
-unset FILES_URL
-unset KNOWN_HOSTS
+cleanup
 
 popd
 
