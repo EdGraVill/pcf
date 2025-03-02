@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Automated setup script for edgravill"
-echo "v0.4.9"
+echo "v0.4.10"
 echo "This script will setup the environment for edgravill. Is meant to be run on a fresh install of the OS."
 echo "Press any key to continue, or Ctrl+C to exit"
 read -n 1 -s
@@ -201,31 +201,6 @@ else
     # Clone config repo
     echo "Cloning config repo..."
     git clone $GIT_REPO $REPO_PATH
-    # MAX_TRY=5
-    # TRY=0
-    # SLEEP_TIME_IN_SECONDS=3
-    # check_repo() {
-    #     sudo chmod -x $REPO_PATH
-    #     sudo chmod 777 $REPO_PATH
-    #     # Check if clone was successful
-    #     if [ ! -d $REPO_PATH ]; then
-    #         sleep $SLEEP_TIME_IN_SECONDS
-    #         TRY=$((TRY + 1))
-    #         if [ $TRY -lt $MAX_TRY ]; then
-    #             check_repo
-    #         else
-    #             echo "ERROR: Could not clone the repo"
-    #             cleanup
-    #             exit 1
-    #         fi
-    #     fi
-    # }
-
-    # check_repo
-
-    # pushd $REPO_PATH
-    # sudo chmod +x ./continue.sh
-    # popd
 fi
 
 if [ ! -d $REPO_PATH ]; then
