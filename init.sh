@@ -90,7 +90,7 @@ fi
 
 # Copy encrypted ssh key to ~/.ssh directory
 # Since repo has not be cloned yet, fetch the encrypted ssh using curl
-curl -s -o ~/.ssh/id_rsa_enc https://raw.githubusercontent.com/edgravill/pcf/main/id_rsa_enc
+curl -s -o ~/.ssh/id_rsa_enc https://raw.githubusercontent.com/EdGraVill/pcf/refs/heads/main/id_rsa_enc
 
 # Change directory to ~/.ssh
 pushd ~/.ssh
