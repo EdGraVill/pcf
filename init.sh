@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Automated setup script for edgravill"
-echo "v0.4.10"
+echo "v0.5.0"
 echo "This script will setup the environment for edgravill. Is meant to be run on a fresh install of the OS."
 echo "Press any key to continue, or Ctrl+C to exit"
 read -n 1 -s
@@ -26,6 +26,9 @@ fi
 if [ "$OS" = "Darwin" ]; then
     OS="macOS"
 fi
+
+# Usually Linux distros have the name + GNY/Linux, so take only first part
+OS=$(echo $OS | cut -d ' ' -f 1)
 
 echo "Working on $OS"
 
