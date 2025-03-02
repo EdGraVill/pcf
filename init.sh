@@ -1,5 +1,10 @@
 #!/bin/bash
 
+pushd ~
+
+FILES_URL="https://raw.githubusercontent.com/EdGraVill/pcf/refs/heads/main"
+KNOWN_HOSTS[0]="github.com"
+
 # Check which OS are we running on, and store in the variable OS.
 OS=$(uname -s)
 
@@ -87,12 +92,12 @@ if [ ! -d ~/.ssh ]; then
 
     # Copy encrypted ssh key to ~/.ssh directory
     # Since repo has not be cloned yet, fetch the encrypted ssh using curl
-    curl -s -o ~/.ssh/id_rsa_enc -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/EdGraVill/pcf/refs/heads/main/id_rsa_enc
+    curl -s -o ~/.ssh/id_rsa_enc -H 'Cache-Control: no-cache' $FILES_URL/id_rsa_enc
+    curl -s -o ~/.ssh/id_rsa_enc -H 'Cache-Control: no-cache' $FILES_URL/id_rsa_pub_enc
 
     # Prompt the user for the password, and store it in the variable PASSWORD.
-    echo -n "Please enter your password: "
+    echo "Please enter your password:"
     read -s PASSWORD
-    echo $PASSWORD
 
     # Change directory to ~/.ssh
     pushd ~/.ssh
@@ -106,14 +111,22 @@ if [ ! -d ~/.ssh ]; then
         exit 1
     fi
 
-    # Remove the encrypted ssh key
+    # Decrypt the ssh public key
+    DECRYPT_OUTPUT=$(openssl enc -d -aes-256-cbc -salt -pbkdf2 -k "$PASSWORD" -in id_rsa_pub_enc -out id_rsa.pub 2>&1)
+
+    # Check if the password is correct
+    if echo "$DECRYPT_OUTPUT" | grep -q "bad decrypt"; then
+        echo "ERROR: Incorrect password"
+        exit 1
+    fi
+
+    # Remove the encrypted ssh key and public key
     rm id_rsa_enc
+    rm id_rsa_pub_enc
 
-    # Change the permissions of the ssh key
-    chmod 400 id_rsa
-
-    # Generate the public key
-    ssh-keygen -y -f id_rsa >id_rsa.pub
+    # Change the permissions of the ssh key and public key to make them readable only by the owner
+    sudo chmod 400 id_rsa
+    sudo chmod 400 id_rsa.pub
 
     # Check if ssh-agent is running. If not, start it.
     if [ -z "$SSH_AGENT_PID" ]; then
@@ -123,13 +136,31 @@ if [ ! -d ~/.ssh ]; then
     # Add the ssh key to the ssh-agent
     ssh-add ./id_rsa
 
+    # Add the known hosts
+    for host in "${KNOWN_HOSTS[@]}"; do
+        ssh-keyscan -H $host >>~/.ssh/known_hosts
+    done
+
     # Change directory back to the original directory
     popd
 fi
 
 # Clone config repo
-git clone git@github.com:EdGraVill/cf.git
+git clone git@github.com:EdGraVill/cf.git >/dev/null
+sudo chmod +x ~/cf/init.sh
 
 # Continue from there
-echo "All public stuff done. Now we can continue with the private stuff."
+echo "All public stuff done. Starting private stuff..."
+
+# Clean variables
+unset OS
+unset SUPPORTED_OS
+unset GIT_OUTPUT
+unset DECRYPT_OUTPUT
+unset PASSWORD
+unset FILES_URL
+unset KNOWN_HOSTS
+
+popd
+
 ~/cf/continue.sh
